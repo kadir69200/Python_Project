@@ -27,6 +27,14 @@ class Order:
     def Id(self):
         return self.__id
 
+    @quantity.setter
+    def quantity(self, quantity):
+        self.__quantity = quantity
+
+    @price.setter
+    def price(self, price):
+        self.__price = price
+
     ##Methods :
 
     #Overladed Methods
@@ -105,6 +113,22 @@ class Book:
         ##Insertion of the order (condition):
         self.__list_sell_order.append(order)
         self.__list_sell_order.sort()
+
+        ##Execution :
+        #If is not the first order of the book :
+        if len(self.__list_sell_order) != 0 and len(self.__list_buy_order) != 0 : #the list are not empty
+        
+            if self.__list_sell_order[0].price == self.__list_buy_order[0].price and self.__list_sell_order[0].quantity <= self.__list_buy_order[0].quantity : #same price and enough quantity available
+
+                self.__list_buy_order[0].quantity = self.__list_buy_order[0].quantity - self.__list_sell_order[0].quantity #quantity update
+            
+                #deletion of the sell order
+                del self.__list_sell_order[0] 
+
+                if self.__list_buy_order[0].quantity == 0 : #deletion of the buy order
+                    del self.__list_buy_order[0]
+
+
         
 
     
@@ -128,6 +152,22 @@ class Book:
         ##Insertion of the order (condition):
         self.__list_buy_order.append(order)
         self.__list_buy_order.sort(reverse = True)
+
+        ##Execution :
+        #If is not the first order of the book :
+        if len(self.__list_sell_order) != 0 and len(self.__list_buy_order) != 0 : #the list are not empty
+
+            if self.__list_buy_order[0].price == self.__list_sell_order[0].price and self.__list_buy_order[0].quantity <= self.__list_sell_order[0].quantity : #same price and enough quantity available
+
+                self.__list_sell_order[0].quantity = self.__list_sell_order[0].quantity - self.__list_buy_order[0].quantity #quantity update
+            
+                #deletion of the buy order
+                del self.__list_buy_order[0] 
+
+                if self.__list_sell_order[0].quantity == 0 : #deletion of the sell order
+                    del self.__list_sell_order[0]
+
+
 
 
         
