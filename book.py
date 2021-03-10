@@ -90,21 +90,56 @@ class Book:
     def insert_sell2(self, quantity, price):
         ##Creation of the order :
         order = Order(quantity, price, side = "sell")
+        already_del = False
 
-        ##Insertion of the order (condition):
+        #adding of the order :
+        self.__list_sell_order.append(order)
 
-        #if it is the first order of the book :
-        if len(self.__list_sell_order) == 0 :
-            self.__list_sell_order.append(order)
+        if len(self.__list_buy_order) != 0 : #the list is not empty
+
+            for i in range(len(self.__list_buy_order)):
+
+                if order.price <= self.__list_buy_order[i].price : 
+                    
+                    if order.quantity <= self.__list_buy_order[i].quantity : #same price and enough quantity available
+
+                        self.__list_buy_order[i].quantity = self.__list_buy_order[i].quantity - order.quantity #quantity update
             
-        
-        else :
-            for i in range(len(self.__list_sell_order)):
+                        #deletion of the sell order
+                        if already_del == False :
+                            self.__list_sell_order.remove(order)
+                            already_del = True
 
-                if order < self.__list_buy_order[i] : 
-                    self.__list_sell_order.insert(i, order)
-                
+                        if self.__list_buy_order[i].quantity == 0 : #deletion of the buy order
+                            del self.__list_buy_order[i]
+
+                    else : 
+
+                        quantity = order.quantity
+                        j = i
+
+                        while True:
+                            
+                            quantity = quantity - self.__list_buy_order[i].quantity #quantity update
+                            
+                            self.__list_buy_order[j].quantity = self.__list_buy_order[j].quantity - order.quantity #quantity update
+                            del self.__list_buy_order[j]
+                            j = j + 1
+                            
+                            if quantity < self.__list_buy_order[i].quantity :
+                                break
+
+                        if already_del == False :
+                            self.__list_sell_order.remove(order)
+                            already_del = True
+                    
                     break
+                    
+                    
+
+
+        #Sort of the list (decreasing) :    
+        self.__list_sell_order.sort()
 
     def insert_sell(self, quantity, price):
         ##Creation of the order :
@@ -136,14 +171,53 @@ class Book:
     def insert_buy2(self, quantity, price):
         ##Creation of the order :
         order = Order(quantity, price, side = "buy")
+        already_del = False
 
         ##Insertion of the order (condition):
+        self.__list_buy_order.append(order)
+
         for i in range(len(self.__list_sell_order)):
 
-            if order > self.__list_buy_order[i] : 
-                self.__list_buy_order.insert(i, order)
+            if order.price >= self.__list_sell_order[i].price :
+            
+                if order.quantity <= self.__list_sell_order[i].quantity : #same price and enough quantity available
+
+                    self.__list_sell_order[i].quantity = self.__list_sell_order[i].quantity - order.quantity #quantity update
+            
+                    #deletion of the buy order
+                    if already_del == False :
+                        self.__list_buy_order.remove(order)
+                        already_del = True
+
+                    if self.__list_sell_order[i].quantity == 0 : #deletion of the sell order
+                        del self.__list_sell_order[i]
                 
+
+                else : 
+
+                        quantity = order.quantity
+                        j = i
+
+                        while True:
+                            
+                            quantity = quantity - self.__list_sell_order[i].quantity #quantity update
+                            
+                            self.__list_sell_order[j].quantity = self.__list_sell_order[j].quantity - order.quantity #quantity update
+                            del self.__list_sell_order[j]
+                            j = j + 1
+                            
+                            if quantity < self.__list_sell_order[i].quantity :
+                                break
+
+                        if already_del == False :
+                            self.__list_buy_order.remove(order)
+                            already_del = True
+
                 break
+
+        #Sort of the list (decreasing) :    
+        self.__list_buy_order.sort(reverse = True)
+                
 
     def insert_buy(self, quantity, price):
         ##Creation of the order :
