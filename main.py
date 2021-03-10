@@ -11,15 +11,6 @@ def main():
     book.insert_sell(1, 10.0)
     book.insert_sell(10, 10.0)
 
-def test():
-    book = Book("TEST")
-    book.insert_buy(10, 10.0)
-    book.insert_sell(1, 10.0)
-    book.insert_sell(10, 10.0)
-    book.show()
 
-
-
-if __name__ == "__main__":
-    #main()
-    test()
+if __name__ == "__main__" :
+    main()
