@@ -10,6 +10,7 @@ class Order:
     def __init__(self, quantity, price, side):
         self.__quantity = quantity          #Volume of the order
         self.__price = price                #Price of the order
+        self.__side = side                  #Type of order (BUY or SELL)
         self.__id = Order.id                #Id of each order
         Order.id = Order.id + 1             #at each creation of an order the id is incremented by 1
         
@@ -39,10 +40,10 @@ class Order:
 
     #Overladed Methods
     def __str__(self): # human-readable content
-        return "%s @ %s" % (self.__quantity, self.__price)
+        return "Order(id = %s, %s, %s)" % (self.__id, self.__quantity, self.__price)
 
     def __repr__(self): # unambiguous representation of the object
-        return "Order(id = %s, %s, %s)" % (self.__id, self.__quantity, self.__price)
+        return "%s  %s @ %s  id = %s" % (self.__side, self.__quantity, self.__price, self.__id)
 
     def __eq__(self, other): # self == other
         return other and self.__quantity == other.__quantity and self.__price == other.__price
@@ -79,18 +80,28 @@ class Book:
         return self.__list_sell_order
 
       
-    ##Methods :
+    ###Methods :
 
 
-    #Overladed Methods
+    ##Overladed Methods
     def __str__(self): # human-readable content
-        return  "Order Book %s : \n ------------------------- \n ASK %s \n BID %s" % (self.__name, self.__list_sell_order, self.__list_buy_order)
 
-    #Insert sell order :
-    def insert_sell2(self, quantity, price):
+        return  str("Book on %s : \n        " %(self.__name) + 
+                "\n        ".join( repr(order) for order in self.__list_sell_order ) + 
+                "\n        "+"\n        ".join( repr(order) for order in self.__list_buy_order ))
+         
+
+    
+    ##Insert sell order :
+
+    def insert_sell(self, quantity, price):
+        
         ##Creation of the order :
-        order = Order(quantity, price, side = "sell")
-        already_del = False
+        order = Order(quantity, price, side = "SELL")
+        
+        already_del = False #order already deleted
+        execution = False #to know if there has been an execution or not
+        executed_order = []
 
         #adding of the order :
         self.__list_sell_order.append(order)
@@ -100,7 +111,10 @@ class Book:
             for i in range(len(self.__list_buy_order)):
 
                 if order.price <= self.__list_buy_order[i].price : 
-                    
+
+                    execution = True
+
+
                     if order.quantity <= self.__list_buy_order[i].quantity : #same price and enough quantity available
 
                         self.__list_buy_order[i].quantity = self.__list_buy_order[i].quantity - order.quantity #quantity update
@@ -113,6 +127,8 @@ class Book:
                         if self.__list_buy_order[i].quantity == 0 : #deletion of the buy order
                             del self.__list_buy_order[i]
 
+                        executed_order.append((self.__list_buy_order[i].quantity, self.__list_buy_order[i].price))
+
                     else : 
 
                         quantity = order.quantity
@@ -124,8 +140,11 @@ class Book:
                             
                             self.__list_buy_order[j].quantity = self.__list_buy_order[j].quantity - order.quantity #quantity update
                             del self.__list_buy_order[j]
-                            j = j + 1
                             
+                            executed_order.append((quantity, self.__list_buy_order[j].price))
+
+                            j = j + 1
+
                             if quantity < self.__list_buy_order[i].quantity :
                                 break
 
@@ -136,14 +155,25 @@ class Book:
                     break
                     
                     
-
-
-        #Sort of the list (decreasing) :    
+        #Sort of the list :    
         self.__list_sell_order.sort()
 
-    def insert_sell(self, quantity, price):
+        ##Display of the order book :
+        if execution == False : 
+            print("-------------------------------------------\n--- Insert "+ repr(order) +" on %s" % (self.__name) + '\n' + self.__str__() + 
+                 "\n-------------------------------------------\n")
+
+        else :
+            print("-------------------------------------------\n--- Insert "+ repr(order) +" on %s" % (self.__name) + '\n' + 
+                "\n" .join("Execute "+ str(order[0]) + " at " + str(order[1]) + " on " + self.__name for order in executed_order ) +
+                '\n' + self.__str__() +  "\n-------------------------------------------\n")  
+
+    
+    
+    
+    def insert_sell2(self, quantity, price):
         ##Creation of the order :
-        order = Order(quantity, price, side = "sell")
+        order = Order(quantity, price, side = "SELL")
 
         ##Insertion of the order (condition):
         self.__list_sell_order.append(order)
@@ -168,10 +198,14 @@ class Book:
 
     
     #Insert buy order :
-    def insert_buy2(self, quantity, price):
+    def insert_buy(self, quantity, price):
+        
         ##Creation of the order :
-        order = Order(quantity, price, side = "buy")
-        already_del = False
+        order = Order(quantity, price, side = "BUY")
+        
+        already_del = False #order already deleted
+        execution = False #to know if there has been an execution or not
+        executed_order = []
 
         ##Insertion of the order (condition):
         self.__list_buy_order.append(order)
@@ -179,6 +213,8 @@ class Book:
         for i in range(len(self.__list_sell_order)):
 
             if order.price >= self.__list_sell_order[i].price :
+
+                execution = True
             
                 if order.quantity <= self.__list_sell_order[i].quantity : #same price and enough quantity available
 
@@ -191,7 +227,8 @@ class Book:
 
                     if self.__list_sell_order[i].quantity == 0 : #deletion of the sell order
                         del self.__list_sell_order[i]
-                
+
+                    executed_order.append((self.__list_sell_order[i].quantity, self.__list_sell_order[i].price))
 
                 else : 
 
@@ -204,6 +241,9 @@ class Book:
                             
                             self.__list_sell_order[j].quantity = self.__list_sell_order[j].quantity - order.quantity #quantity update
                             del self.__list_sell_order[j]
+                            
+                            executed_order.append((quantity, self.__list_sell_order[j].price))
+                            
                             j = j + 1
                             
                             if quantity < self.__list_sell_order[i].quantity :
@@ -217,11 +257,23 @@ class Book:
 
         #Sort of the list (decreasing) :    
         self.__list_buy_order.sort(reverse = True)
+
+        ##Display of the order book :
+        if execution == False : 
+            print("-------------------------------------------\n--- Insert "+ repr(order) +" on %s" % (self.__name) + '\n' + self.__str__() + 
+                 "\n-------------------------------------------\n")
+
+        else :
+            print("-------------------------------------------\n--- Insert "+ repr(order) +" on %s" % (self.__name) + '\n' + 
+                "\n" .join("Execute "+ str(order[0]) + " at " + str(order[1]) + " on " + self.__name for order in executed_order ) +
+                '\n' + self.__str__() +  "\n-------------------------------------------\n")  
                 
 
-    def insert_buy(self, quantity, price):
+    
+    
+    def insert_buy2(self, quantity, price):
         ##Creation of the order :
-        order = Order(quantity, price, side = "buy")
+        order = Order(quantity, price, side = "BUY")
 
         ##Insertion of the order (condition):
         self.__list_buy_order.append(order)
