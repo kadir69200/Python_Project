@@ -1,6 +1,8 @@
 
 ###Public attribut :
 
+import pandas as pd
+import numpy as np
 
 ### Order Class
 class Order:
@@ -63,8 +65,9 @@ class Book:
         self.__name = name              #Book name
         self.__list_sell_order = []     #list of sell order
         self.__list_buy_order = []      #list of buy order
-              
-
+        self.__sells_dataframe = pd.DataFrame(columns=['price','quantity'])
+        self.__buys_dataframe = pd.DataFrame(columns=['price','quantity'])
+        
     ##Property :
         
     @property
@@ -78,18 +81,48 @@ class Book:
     @property
     def list_buy_order(self):
         return self.__list_sell_order
-
-      
+    
+    @property
+    def sells_dataframe(self):
+        return self.__sells_dataframe
+    @property
+    def buys_dataframe(self):
+        return self.__buys_dataframe
+    
     ###Methods :
 
 
     ##Overladed Methods
     def __str__(self): # human-readable content
+        # sells=np.array([order.price,order.id] for order in self.__list_sell_order )
+        # sell_dataframe=pd.DataFrame(sells,[order.id for order in self.__list_sell_order ],['price','volume'])
+        # sell_dataframe.sort_values(by = 'price',ascending = False)
 
+        # buys=np.array([order.price,order.id] for order in self.__list_buy_order )
+        # buy_dataframe=pd.DataFrame(buys,[order.id for order in self.__list_buy_order ],['price','volume'])
+        # buy_dataframe.sort_values(by = 'price',ascending = False)
+        
+        # for order in self.__list_sell_order:
+        #     sell=pd.DataFrame([(order.price,order.quantity)],index=[order.id],columns=['price','quantity'])
+        #     self.__sells_dataframe=self.__sells_dataframe.append(sell)
+        
+        # for order in self.__list_buy_order:
+        #     buy=pd.DataFrame([(order.price,order.quantity)],index=[order.id],columns=['price','quantity'])
+        #     self.__buys_dataframe=self.__buys_dataframe.append(buy)
+        
+        
+        if (self.__sells_dataframe.empty == False) or(self.__buys_dataframe.empty == False):
+            print("TABULA REPRESENTATION")
+            print("---------------------")
+            print("---ASK---")
+            print(self.__sells_dataframe)
+            print("---BID---")
+            print(self.__buys_dataframe)
+        
         return  str("Book on %s : \n        " %(self.__name) + 
                 "\n        ".join( repr(order) for order in self.__list_sell_order ) + 
                 "\n        "+"\n        ".join( repr(order) for order in self.__list_buy_order ))
-         
+        
 
     
     ##Insert sell order :
@@ -105,6 +138,7 @@ class Book:
 
         #adding of the order :
         self.__list_sell_order.append(order)
+        
 
         if len(self.__list_buy_order) != 0 : #the list is not empty
 
@@ -157,17 +191,21 @@ class Book:
                     
         #Sort of the list :    
         self.__list_sell_order.sort()
-
+        
         ##Display of the order book :
         if execution == False : 
             print("-------------------------------------------\n--- Insert "+ repr(order) +" on %s" % (self.__name) + '\n' + self.__str__() + 
                  "\n-------------------------------------------\n")
+            
+            
+            # sell=pd.DataFrame([(price,quantity)],index=[order.id],columns=['price','quantity'])
+            # self.__sells_dataframe=self.__sells_dataframe.append(sell)
 
         else :
             print("-------------------------------------------\n--- Insert "+ repr(order) +" on %s" % (self.__name) + '\n' + 
                 "\n" .join("Execute "+ str(order[0]) + " at " + str(order[1]) + " on " + self.__name for order in executed_order ) +
                 '\n' + self.__str__() +  "\n-------------------------------------------\n")  
-
+            
     
     
     
@@ -260,9 +298,13 @@ class Book:
 
         ##Display of the order book :
         if execution == False : 
+            
             print("-------------------------------------------\n--- Insert "+ repr(order) +" on %s" % (self.__name) + '\n' + self.__str__() + 
                  "\n-------------------------------------------\n")
-
+            
+            
+            # buy=pd.DataFrame([(price,quantity)],index=[order.id],columns=['price','quantity'])
+            # self.__buys_dataframe=self.__buys_dataframe.append(buy,ignore_index=True)
         else :
             print("-------------------------------------------\n--- Insert "+ repr(order) +" on %s" % (self.__name) + '\n' + 
                 "\n" .join("Execute "+ str(order[0]) + " at " + str(order[1]) + " on " + self.__name for order in executed_order ) +
